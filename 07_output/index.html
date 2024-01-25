@@ -1,0 +1,124 @@
+---
+layout: default
+title: "PHYSCI 70: Intro to Digital Fabrication"
+includeNav: true
+---
+
+<div class="content">
+
+  <div align=center>
+    <h3>Electronic Outputs</h3>
+  </div>
+
+  <p><i>1. Use an output device that you haven't used before.</i></p>
+  <p><i>2. Write a microcontroller program that integrates at least one input device and one output device. Avoid the delay() function by using either timers or interrupts.</i></p>
+  <p><i>3. Use an oscilloscope to discover the time domain at which your output device is operating. Is it on a fixed clock? What's its speed? Share images and describe your findings.</i></p>
+  <p><i>4. Prepare CAD files for CNC week (after spring break). Consider either 2D DXF files for routing sheet material (like plywood or OSB), or 3D STL files to mill out a (2.5D) shape. We will also cover molding & casting, so you may want to consider milling a mold.</i></p>
+
+  <p>For this week, I learned how to use a piezzo buzzer as an output device. I wanted to make a device that lets you play different notes. Initially, I used buttons on a breadboard, but realized that I didn't like the button size and closeness mandated by the breadboard. I decided to get rid of the buttons and instead make my own, larger buttons with copper tape. I wanted to try to minimize the number of pins needed, so instead of having a circuit for each note, I used 3 pins together. To make the note play, you touch some combination of the pins to a copper pad connected to ground. To fulfill the no-delay() requirement, the piano beeps if you hold the keys.</p>
+
+  <video width="100%" height="100%" preload="auto" controls>
+    <source src="workingrotate.mp4" type="video/mp4">
+  </video>
+  <p><i>Beeping piano!</i></p>
+
+
+  <p>With three pins that can either be high or low, there are 2^3 or 8 total configurations. I mapped the pins such that the yellow wire in pin 4 is the 1s place, the green wire in pin 3 is the 2s place, and the red wire in pin 2 is the 4s place. I used Arduino's built-in pullup resistor on these three pins so that they normally read HIGH, unless they were in contact with ground, in which case they read LOW.</p>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="keys.jpg" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="circuit.svg" class="img-fluid">
+    </div>
+  </div>
+  <p><i>"Wiring" of the piano keys, and a more organized diagram made with <a href="https://www.circuit-diagram.org/">www.circuit-diagram.org</a>. The yellow tape between D and A is a bridge to isolate the overlapping paths.</i></p>
+
+  <p>Here's my code:</p>
+
+  <div class="card bg-light">
+    <div class="card-body">
+      <pre>
+<font color="#00979c">int</font> <font color="#000000">buzzerPin</font> <font color="#434f54">=</font> <font color="#000000">10</font><font color="#000000">;</font>
+<font color="#434f54">&#47;&#47; hertz for c major scale</font>
+<font color="#00979c">int</font> <font color="#000000">notes</font><font color="#000000">[</font><font color="#000000">]</font> <font color="#434f54">=</font> <font color="#000000">{</font><font color="#000000">262</font><font color="#434f54">,</font> <font color="#000000">294</font><font color="#434f54">,</font> <font color="#000000">330</font><font color="#434f54">,</font> <font color="#000000">349</font><font color="#434f54">,</font> <font color="#000000">392</font><font color="#434f54">,</font> <font color="#000000">440</font><font color="#434f54">,</font> <font color="#000000">494</font><font color="#000000">}</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47; timer variables</font>
+<font color="#00979c">long</font> <font color="#000000">previousMillis</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#434f54">&#47;&#47; see later</font>
+<font color="#00979c">long</font> <font color="#000000">interval</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#434f54">&#47;&#47; bopping represents whether the tone is on or off</font>
+<font color="#434f54">&#47;&#47; when no contact, it&#39;s false</font>
+<font color="#434f54">&#47;&#47; when contact, it alternates</font>
+<font color="#00979c">bool</font> <font color="#000000">bopping</font> <font color="#434f54">=</font> <font color="#00979c">false</font><font color="#000000">;</font>
+
+<font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+
+ &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">2</font><font color="#434f54">,</font> <font color="#00979c">INPUT_PULLUP</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">3</font><font color="#434f54">,</font> <font color="#00979c">INPUT_PULLUP</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">4</font><font color="#434f54">,</font> <font color="#00979c">INPUT_PULLUP</font><font color="#000000">)</font><font color="#000000">;</font>
+
+<font color="#000000">}</font>
+
+<font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#434f54">&#47;&#47; input: check the pins</font>
+ &nbsp;<font color="#434f54">&#47;&#47; because i&#39;m using the internal pullup, digitalRead() returns 1 for not touching and 0 for touching</font>
+ &nbsp;<font color="#434f54">&#47;&#47; but that makes my math hard later so i switched it here</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">pin2</font> <font color="#434f54">=</font> <font color="#434f54">-</font> <font color="#000000">(</font><font color="#d35400">digitalRead</font><font color="#000000">(</font><font color="#000000">2</font><font color="#000000">)</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; 0 is not touching, 1 is touching</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">pin3</font> <font color="#434f54">=</font> <font color="#434f54">-</font> <font color="#000000">(</font><font color="#d35400">digitalRead</font><font color="#000000">(</font><font color="#000000">3</font><font color="#000000">)</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">pin4</font> <font color="#434f54">=</font> <font color="#434f54">-</font> <font color="#000000">(</font><font color="#d35400">digitalRead</font><font color="#000000">(</font><font color="#000000">4</font><font color="#000000">)</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47; binary to decimal conversion</font>
+ &nbsp;<font color="#00979c">int</font> <font color="#000000">value</font> <font color="#434f54">=</font> <font color="#000000">pin4</font> <font color="#434f54">+</font> <font color="#000000">pin3</font> <font color="#434f54">*</font> <font color="#000000">2</font> <font color="#434f54">+</font> <font color="#000000">pin2</font> <font color="#434f54">*</font> <font color="#000000">4</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; 0 is none touching, 7 is all touching</font>
+
+ &nbsp;<font color="#434f54">&#47;&#47; if a note is being pressed</font>
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">value</font> <font color="#434f54">!=</font> <font color="#000000">0</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; start the timer</font>
+ &nbsp;&nbsp;&nbsp;<font color="#00979c">unsigned</font> <font color="#00979c">long</font> <font color="#000000">currentMillis</font> <font color="#434f54">=</font> <font color="#d35400">millis</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; if this is a new contact, then interval = 0 (via initialization or the else below)</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; therefore this if will pass</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; if this is not a new contact, then interval = 500</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; and it will work like a timer</font>
+ &nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">currentMillis</font> <font color="#434f54">-</font> <font color="#000000">previousMillis</font> <font color="#434f54">&gt;=</font> <font color="#000000">interval</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">previousMillis</font> <font color="#434f54">=</font> <font color="#000000">currentMillis</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">interval</font> <font color="#434f54">=</font> <font color="#000000">500</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; switch whether the tone is on or not</font>
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">bopping</font> <font color="#434f54">=</font> <font color="#5e6d03">not</font> <font color="#000000">bopping</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+
+ &nbsp;<font color="#000000">}</font> <font color="#5e6d03">else</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; reset</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">interval</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">bopping</font> <font color="#434f54">=</font> <font color="#00979c">false</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">bopping</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">tone</font><font color="#000000">(</font><font color="#000000">buzzerPin</font><font color="#434f54">,</font> <font color="#000000">notes</font><font color="#000000">[</font><font color="#000000">value</font> <font color="#434f54">-</font> <font color="#000000">1</font><font color="#000000">]</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font> <font color="#5e6d03">else</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#d35400">noTone</font><font color="#000000">(</font><font color="#000000">buzzerPin</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+<font color="#000000">}</font>
+</pre>
+    </div>
+  </div>
+  <p><i>fun fact: the arduino editor has a right-click option "Copy as HTML" which makes these pretty colors!</i></p>
+
+  <p>Getting the oscilloscope to work was difficult. I followed the tutorial from the course site and a conglomeration of images and tutorials from googling "oscilloscope." Eventually, I got <i>some</i> results - when the sound was playing, a line showed up on the screen. Since the beeps were so short in duration, the oscope was having difficulty automatically scaling itself.
+  <video width="100%" height="100%" preload="auto" controls>
+    <source src="oscopebeep.mp4" type="video/mp4">
+  </video>
+  <p><i>beep.. beep.. beep..</i></p>
+
+  <p>In order to determine the clock speed, I messed around with the settings until I got a consistent square wave. The bottom-right corner consistently read 262.797 Hz when playing the lowest beep. If you look at my code, the lowest beep is intended at 262 Hz. The pattern continued for the other notes, where the measured Hz on the oscilloscope matched the programmed tone.</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="oscilloscope.jpg" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="oscilloscopewires.jpg" class="img-fluid">
+    </div>
+  </div>
+  <p><i>Oscilloscope reading and placement of the oscilloscope probes on the signal and ground of the buzzer.</i></p>
+</div>

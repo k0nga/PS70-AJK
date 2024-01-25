@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title> PHYSCI 70: Intro to Digital Fabrication </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+    <link href="/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="page-container">
+    <div class="nonfooter-container">
+      
+      <nav class="navbar navbar-expand-sm navbar-light bg-light">
+        <div style="align-items: left; justify-content:left;" class="container-fluid px-4">
+          <div class="navbar-nav d-flex flex-grow-1">
+            <h3><a class="nav-link" href="/index.html" style="color: black;"> PHYSCI 70: Intro to Digital Fabrication </a></h3>
+          </div>
+          <div class="navbar-nav d-flex">
+            <h4><a class="nav-link p-2" href="/about.html" > About </a></h4>
+            <h4><a class="nav-link p-2" href="/projects.html" > Projects </a></h4>
+            <!-- <h4><a class="nav-link p-2" href="./final.html" > Final Project </a></h4> -->
+          </div>
+        </div>
+      </nav>
+      
+
+      <div class="content">
+
+  <div align=center>
+    <h3>Internet of Things</h3>
+  </div>
+
+  <p><i>Demonstrate communication between a microcontroller and another device. Optionally, work with a partner to control a device remotely.</i></p>
+
+  
+  <p>I want to use a Bluetooth connection in my final project, so I took this week's assignment as an opportunity to learn how to use Bluetooth Low Energy (BLE). I used the <a href="https://nathanmelenbrink.github.io/ps70/10_networking/huzzah3.html">Huzzah+BLE tutorial</a> on the course website as a starting point.</p>
+  <p>I wired one LED to the Huzzah in order to demonstrate connection between the ESP32 and my phone and adapted the code from the tutorial to include lighting up the LED. Code below:</p>
+  <div class="card bg-light">
+    <div class="card-body">
+      <pre>
+        <font color="#95a5a6">&#47;*</font>
+        <font color="#95a5a6"> &nbsp;&nbsp;&nbsp;Based on Neil Kolban example for IDF: </font><u><font color="#95a5a6">https:&#47;&#47;github.com&#47;nkolban&#47;esp32-snippets&#47;blob&#47;master&#47;cpp_utils&#47;tests&#47;BLE%20Tests&#47;SampleWrite.cpp</font></u><font color="#95a5a6"></font>
+        <font color="#95a5a6"> &nbsp;&nbsp;&nbsp;Ported to Arduino ESP32 by Evandro Copercini</font>
+        <font color="#95a5a6">*&#47;</font>
+
+        <font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">BLEDevice</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+        <font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">BLEUtils</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+        <font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><font color="#000000">BLEServer</font><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+
+        <font color="#434f54">&#47;&#47; See the following for generating UUIDs:</font>
+        <font color="#434f54">&#47;&#47; </font><u><font color="#434f54">https:&#47;&#47;www.uuidgenerator.net&#47;</font></u><font color="#434f54"></font>
+
+        <font color="#5e6d03">#define</font> <font color="#000000">SERVICE_UUID</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#005c5f">&#34;4fafc201-1fb5-459e-8fcc-c5c9c331914b&#34;</font>
+        <font color="#5e6d03">#define</font> <font color="#000000">CHARACTERISTIC_UUID</font> <font color="#005c5f">&#34;beb5483e-36e1-4688-b7f5-ea07361b26a8&#34;</font>
+
+        <font color="#00979c">int</font> <font color="#000000">LED_PIN</font> <font color="#434f54">=</font> <font color="#000000">5</font><font color="#000000">;</font>
+        <font color="#00979c">char</font> <font color="#000000">LED_STATUS</font><font color="#000000">;</font>
+
+        <font color="#00979c">class</font> <font color="#000000">MyCallbacks</font><font color="#434f54">:</font> <font color="#00979c">public</font> <font color="#000000">BLECharacteristicCallbacks</font> <font color="#000000">{</font>
+         &nbsp;&nbsp;&nbsp;<font color="#00979c">void</font> <font color="#d35400">onWrite</font><font color="#000000">(</font><font color="#000000">BLECharacteristic</font> <font color="#434f54">*</font><font color="#000000">pCharacteristic</font><font color="#000000">)</font> <font color="#000000">{</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">std</font><font color="#434f54">:</font><font color="#434f54">:</font><font color="#000000">string</font> <font color="#000000">value</font> <font color="#434f54">=</font> <font color="#000000">pCharacteristic</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">getValue</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">value</font><font color="#434f54">.</font><font color="#d35400">length</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">&gt;</font> <font color="#000000">0</font><font color="#000000">)</font> <font color="#000000">{</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;*********&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#005c5f">&#34;New value: &#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">value</font><font color="#434f54">.</font><font color="#d35400">length</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">print</font><font color="#000000">(</font><font color="#000000">value</font><font color="#000000">[</font><font color="#000000">i</font><font color="#000000">]</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;*********&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#5e6d03">for</font> <font color="#000000">(</font><font color="#00979c">int</font> <font color="#000000">i</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font> <font color="#000000">i</font> <font color="#434f54">&lt;</font> <font color="#000000">value</font><font color="#434f54">.</font><font color="#d35400">length</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#000000">i</font><font color="#434f54">++</font><font color="#000000">)</font><font color="#000000">{</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">LED_STATUS</font> <font color="#434f54">=</font> <font color="#000000">value</font><font color="#000000">[</font><font color="#000000">i</font><font color="#000000">]</font><font color="#000000">;</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+         &nbsp;&nbsp;&nbsp;<font color="#000000">}</font>
+        <font color="#000000">}</font><font color="#000000">;</font>
+
+        <font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+         &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">begin</font><font color="#000000">(</font><font color="#000000">115200</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;1- Download and install an BLE scanner app in your phone&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;2- Scan for BLE devices in the app&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;3- Connect to MyESP32&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;4- Go to CUSTOM CHARACTERISTIC in CUSTOM SERVICE and write something&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<b><font color="#d35400">Serial</font></b><font color="#434f54">.</font><font color="#d35400">println</font><font color="#000000">(</font><font color="#005c5f">&#34;5- See the magic =)&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#000000">BLEDevice</font><font color="#434f54">:</font><font color="#434f54">:</font><font color="#000000">init</font><font color="#000000">(</font><font color="#005c5f">&#34;MyESP32PK&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<font color="#000000">BLEServer</font> <font color="#434f54">*</font><font color="#000000">pServer</font> <font color="#434f54">=</font> <font color="#000000">BLEDevice</font><font color="#434f54">:</font><font color="#434f54">:</font><font color="#000000">createServer</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#000000">BLEService</font> <font color="#434f54">*</font><font color="#000000">pService</font> <font color="#434f54">=</font> <font color="#000000">pServer</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">createService</font><font color="#000000">(</font><font color="#000000">SERVICE_UUID</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#000000">BLECharacteristic</font> <font color="#434f54">*</font><font color="#000000">pCharacteristic</font> <font color="#434f54">=</font> <font color="#000000">pService</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">createCharacteristic</font><font color="#000000">(</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">CHARACTERISTIC_UUID</font><font color="#434f54">,</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">BLECharacteristic</font><font color="#434f54">:</font><font color="#434f54">:</font><font color="#000000">PROPERTY_READ</font> <font color="#434f54">|</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">BLECharacteristic</font><font color="#434f54">:</font><font color="#434f54">:</font><font color="#000000">PROPERTY_WRITE</font>
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#000000">pCharacteristic</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">setCallbacks</font><font color="#000000">(</font><font color="#00979c">new</font> <font color="#000000">MyCallbacks</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#000000">pCharacteristic</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">setValue</font><font color="#000000">(</font><font color="#005c5f">&#34;Hello World&#34;</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<font color="#000000">pService</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">start</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#000000">BLEAdvertising</font> <font color="#434f54">*</font><font color="#000000">pAdvertising</font> <font color="#434f54">=</font> <font color="#000000">pServer</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">getAdvertising</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<font color="#000000">pAdvertising</font><font color="#434f54">-</font><font color="#434f54">&gt;</font><font color="#000000">start</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#d35400">pinMode</font><font color="#000000">(</font><font color="#000000">LED_PIN</font><font color="#434f54">,</font> <font color="#00979c">OUTPUT</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">LED_PIN</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+        <font color="#000000">}</font>
+
+        <font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+         &nbsp;<font color="#434f54">&#47;&#47; put your main code here, to run repeatedly:</font>
+         &nbsp;<font color="#00979c">int</font> <font color="#000000">val</font> <font color="#434f54">=</font> <font color="#000000">(</font><font color="#00979c">int</font><font color="#000000">)</font><font color="#000000">LED_STATUS</font><font color="#000000">;</font> &nbsp;<font color="#434f54">&#47;&#47; cast the char* as an int </font>
+         &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">val</font> <font color="#434f54">==</font> <font color="#000000">49</font><font color="#000000">)</font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#434f54">&#47;&#47; ASCII code for the number 1</font>
+         &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">LED_PIN</font><font color="#434f54">,</font> <font color="#00979c">HIGH</font><font color="#000000">)</font><font color="#000000">;</font>
+         &nbsp;<font color="#5e6d03">else</font> 
+         &nbsp;&nbsp;&nbsp;<font color="#d35400">digitalWrite</font><font color="#000000">(</font><font color="#000000">LED_PIN</font><font color="#434f54">,</font> <font color="#00979c">LOW</font><font color="#000000">)</font><font color="#000000">;</font>
+
+         &nbsp;<font color="#d35400">delay</font><font color="#000000">(</font><font color="#000000">2000</font><font color="#000000">)</font><font color="#000000">;</font>
+        <font color="#000000">}</font>
+      </pre>
+    </div>
+  </div>
+
+  <p>The BLE scanner app recommended by the tutorial didn't work, so after downloading several different BLE scanners, I found one that worked: <a href="https://punchthrough.com/lightblue/">LightBlue</a>. When I opened up the app and scanned for BLE connections, I got a long list of possible connections, most of them unnamed. I named my device "MyESP32PK" in the code, so I searched for that, and was able to connect.</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="lightblue.png" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="myesp32pk.png" class="img-fluid">
+    </div>
+  </div>
+  <p><i>The LightBlue interface: scanning for nearby devices, then the connection screen with my ESP32.</i></p>
+  <p>I had programmed the code to turn the LED on when it received a 1 and turn off for any other value. In the above screenshot, you can see that I had sent many values that were not 1. Although LightBlue works to connect better than any of the other BLE apps, it writes and reads in hex. Once I figured this out, I realized that 0x31 is equivalent to 1.</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="connected.jpg" class="img-fluid">
+    </div>
+  </div>
+  <p>It worked just like I wanted it to! When I sent a 1 aka 0x31, the LED turned on a split second later. Sending anything else turned off the LED.</p>
+  <p>My BLE connection experiment was a success. For my final project, I'd like to be able to establish a connection without a specific app, but that's not strictly necessary.</p>
+</div>
+
+    </div>
+  
+  <div class="footer bg-light">
+    <nav class="navbar-expand-sm">
+      <div class="navbar-nav d-flex justify-content-center">
+        <a class="nav-link" href="/index.html" style="color: black;"> home </a>
+        <a class="nav-link" href="https://youtu.be/dQw4w9WgXcQ" style="color:black;">click me!</a>
+      </div>
+  </footer>
+  
+  </div>
+</body>
+</html>

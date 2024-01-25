@@ -1,0 +1,95 @@
+---
+layout: default
+title: "PHYSCI 70: Intro to Digital Fabrication"
+includeNav: true
+---
+
+<div class="content">
+
+  <div align=center>
+    <h3>Machines and End Effectors</h3>
+  </div>
+
+  <p><i>Build a simple machine using at least a stepper motor. Demonstrate the ability to command the machine to get repeatable results. How can you calibrate motor position (i.e. guarantee the "home" position is the same each time you power on the device)?</i></p>
+
+  <p>When thinking about stepper motor motion, my initial thought was to make a car-like contraption. So I went into Fusion and modeled a box that fit a stepper motor inside and attached wheels.</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col-4">
+      <img src="fusion.png" class="img-fluid">
+    </div>
+  </div>
+  <p>Next up was actually getting the stepper motor to work. I strugged with this for a while; initially, the motor was extremely weak and my overzealous tape flag stopped it from moving. Once I shrank the tape flag, I got it to rotate, albeit slowly.</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col-4">
+      <img src="stepperflag.gif" class="img-fluid">
+    </div>
+  </div>
+  <p><i>It's going slowly, but it's going!</i></p>
+  <p>Gabby helped me understand that the reason why it was so weak was because I was powering the motor from the 5V on-board power, and 5V isn't much for these motors. So I tried again with an external 9V power jack, and the motor had much more torque.</p>
+
+  <p>Next was getting a less-jerky circle. I used the AccelStepper library for microstepping and based my code on their example:</p>
+  <div class="card bg-light">
+    <div class="card-body">
+      <pre>
+<font color="#5e6d03">#include</font> <font color="#434f54">&lt;</font><b><font color="#d35400">AccelStepper</font></b><font color="#434f54">.</font><font color="#000000">h</font><font color="#434f54">&gt;</font>
+
+<font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">stepPin</font> <font color="#434f54">=</font> <font color="#000000">13</font><font color="#000000">;</font> &nbsp;
+<font color="#00979c">const</font> <font color="#00979c">int</font> <font color="#000000">dirPin</font> <font color="#434f54">=</font> <font color="#000000">12</font><font color="#000000">;</font> &nbsp;&nbsp;
+<font color="#00979c">int</font> <font color="#000000">circleCounter</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+<font color="#00979c">int</font> <font color="#000000">relativePos</font> <font color="#434f54">=</font> <font color="#000000">200</font><font color="#000000">;</font>
+
+<font color="#434f54">&#47;&#47; Define a stepper and the pins it will use</font>
+<b><font color="#d35400">AccelStepper</font></b> <font color="#000000">stepper</font><font color="#000000">(</font><font color="#000000">1</font><font color="#434f54">,</font> <font color="#000000">stepPin</font><font color="#434f54">,</font> <font color="#000000">dirPin</font><font color="#000000">)</font><font color="#000000">;</font> <font color="#434f54">&#47;&#47; initialise accelstepper for a two wire board</font>
+
+<font color="#00979c">void</font> <font color="#5e6d03">setup</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#000000">stepper</font><font color="#434f54">.</font><font color="#d35400">setAcceleration</font><font color="#000000">(</font><font color="#000000">500</font><font color="#000000">)</font><font color="#000000">;</font>
+<font color="#000000">}</font>
+
+<font color="#00979c">void</font> <font color="#5e6d03">loop</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">stepper</font><font color="#434f54">.</font><font color="#d35400">distanceToGo</font><font color="#000000">(</font><font color="#000000">)</font> <font color="#434f54">==</font> <font color="#000000">0</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">stepper</font><font color="#434f54">.</font><font color="#d35400">move</font><font color="#000000">(</font><font color="#000000">relativePos</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">circleCounter</font><font color="#434f54">++</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+ &nbsp;<font color="#000000">stepper</font><font color="#434f54">.</font><font color="#d35400">run</font><font color="#000000">(</font><font color="#000000">)</font><font color="#000000">;</font>
+ &nbsp;
+ &nbsp;<font color="#5e6d03">if</font> <font color="#000000">(</font><font color="#000000">circleCounter</font> <font color="#434f54">&gt;</font> <font color="#000000">4</font><font color="#000000">)</font> <font color="#000000">{</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">relativePos</font> <font color="#434f54">*=</font> <font color="#434f54">-</font><font color="#000000">1</font><font color="#000000">;</font>
+ &nbsp;&nbsp;&nbsp;<font color="#000000">circleCounter</font> <font color="#434f54">=</font> <font color="#000000">0</font><font color="#000000">;</font>
+ &nbsp;<font color="#000000">}</font>
+<font color="#000000">}</font></pre>
+    </div>
+  </div>
+  <p>This worked much better! I got smooth rotation and could even accelerate and decelerate.</p>
+  <p>With those two elements complete, I laser cut my design and assembled it with tape. Then I realized I had flipped the dimensions of the box and the motor didn't fit right, so I re-modeled and re-cut and re-assembled. The code above intends the motor to accelerate and decelerate through one complete rotation and repeat.</p>
+
+  <video width="100%" height="100%" preload="auto" controls>
+    <source src="spin.mp4" type="video/mp4">
+  </video>
+
+  <p>As you can see by the line on the wheel, it's quite accurate. This is as much "homing" as I did. Given enough resisting force, the motor could skip steps and lose its position, but the forces on the wheels were never large.</p>
+  <p>My initial plan was to transfer motion from the motor to the front axle with a rubber band. However, this did not work - at all. When it was just a little bit tight, the rubber band would simply stretch rather than transmit force. When it was very tight, it would slip around the wheel or axle. The wheels, too, had very little friction with the table. This second problem was easier to solve:</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col-4">
+      <img src="hotglue.jpg" class="img-fluid">
+    </div>
+  </div>
+
+  <p>In my wheel exterior testing, I determined that a rubber band with hot glue gave just enough friction with the table to spin well. I also discovered a different type of movement which I thought was pretty fun.</p>
+
+  <video width="100%" height="100%" preload="auto" controls>
+    <source src="circling.mp4" type="video/mp4">
+  </video>
+
+  <p>Still, there can be improvements to this motion. I like how it wobbles around a lot - I think it's interesting to look at and kind of funny. I texted that video to my friends and received some feedback:</p>
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col-4">
+      <img src="comments.png" class="img-fluid">
+    </div>
+  </div>
+  <p>The wires were getting caught up in the rotation of the wheels, which I figured I could fix. I disassembled the bot and rerouted the wires so that they came out of its head and wouldn't get tangled in the wheels. This was effective at stopping it from running over its own wires, but they still ended up twisting too far, so I made the code run the motor forwards then backwards to cancel out the twisting.</p>
+
+  <video width="100%" height="100%" preload="auto" controls>
+    <source src="finalspinny.mp4" type="video/mp4">
+  </video>
+  <p><i>Top view with out-of-the-way wires and backwards-forwards spins.</i></p>
+</div>
