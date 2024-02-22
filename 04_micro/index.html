@@ -1,0 +1,93 @@
+---
+layout: default
+title: "PHYSCI 70: Intro to Digital Fabrication"
+includeNav: true
+---
+
+<div class="content">
+
+  <div align=center>
+    <h3>Microcontroller Programming</h3>
+  </div>
+
+  <p><i>Program an Arduino board to do something. Include code snippets in your documentation. Bring your circuit to class Tuesday and be ready to do a brief live demo.</i></p>
+
+  <p>For this week's assignment, I wanted to make a game of sorts controlled by the microcontroller and utilizig the LED's. Eventually, I settled on making a memory game with a simple array of buttons and LED's.</p>
+  <p>I used an online arduino tutorial to build out most of the functional code and the inpsiration for the project. You can find the project here: 
+<a href="https://techatronic.com/sequence-arduino-electronic-game-game-with-arduino/">project website </a></p>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="wiringreal.jpg" class="img-fluid">
+    </div>
+  </div>
+  <p><i>Final wiring! Could definitely be cleaner but works well for a prototype.</i></p>
+  <p>Each button is connected to a resistor, which is then in series with the LED that is plugged into the Arduino controller with the appropriate digital controller pins and to the ground + power. The assembly is identical down the line, with the exception of the speaker, which required me to rearrange the top button-resistor-LED assembly to accomodate it in the breadboard.</p>
+
+  <p>Below is also the wiring diagram (draw on my iPad very hastily at midnight, so I apologize for the lack of artistry. Hopefully still gets the point across). </p>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="diagram.png" class="img-fluid">
+    </div>
+  </div>
+
+<p> Let's now see it in action! </p>
+
+
+
+<!-- CODE SNIPPET START -->
+
+  <div class="card bg-light">
+    <div class="card-body">
+      <pre><code>int leds[] = {3, 4, 5, 6};
+<span class="text-info">//int leds[] = {6, 5, 4, 3}; // use this to make the lights go backwards</span>
+int numleds = 4; <span class="text-info">// because .length isn't here :(</span>
+
+void setup() {
+  <span class="text-info">// set LED pins to output and off</span>
+  for (int i = 0; i < numleds; i++) {
+    pinMode(leds[i], OUTPUT);
+    digitalWrite(leds[i], LOW);
+  }
+
+  pinMode(A0, OUTPUT);  <span class="text-info">//This will be GND for the potentiometer</span>
+  pinMode(A4, OUTPUT);  <span class="text-info">//This will be 3.3V for the pot</span>
+  pinMode(A2, INPUT);
+
+  digitalWrite(A0, LOW);
+  digitalWrite(A4, HIGH);
+}
+
+void loop() {
+  <span class="text-info">// check the potentiometer value</span>
+  int pot_value = analogRead(A2);
+  <span class="text-info">// map it to useful values representing the # of leds on</span>
+  <span class="text-info">// since map() truncates, use numleds+1 instead of numleds</span>
+  int led_value = map(pot_value, 0, 1023, 0, numleds+1);
+
+  <span class="text-info">// for each led in leds[]</span>
+  for (int l = 0; l < numleds; l++) {
+    <span class="text-info">// if it should be on, turn it on</span>
+    if (l < led_value) {
+      digitalWrite(leds[l], HIGH);
+    <span class="text-info">// otherwise turn it off</span>
+    } else {
+      digitalWrite(leds[l], LOW);
+    }
+  }
+  <span class="text-info">// this feels like an appropriately speedy response time</span>
+  delay(100);
+}</code></pre></div></div>
+
+<!-- CODE SNIPPET END -->
+
+  <p>Getting to this working code took a fair bit of debugging. Notably, the last light wouldn't turn on until I realized that map() truncates. Also, digital pin 1 simply doesn't work the way I intended, so I switched to using pins 3-6 to avoid the problem.</p>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="short.gif" class="img-fluid">
+    </div>
+  </div>
+  <p><i>it works! this is with the "backwards" code configuration.</i></p>
+</div>
