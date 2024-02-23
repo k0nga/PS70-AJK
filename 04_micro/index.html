@@ -11,14 +11,18 @@ includeNav: true
   </div>
 
   <p><i>Program an Arduino board to do something. Include code snippets in your documentation. Bring your circuit to class Tuesday and be ready to do a brief live demo.</i></p>
-
-  <p>For this week's assignment, I wanted to make a game of sorts controlled by the microcontroller and utilizig the LED's. Eventually, I settled on making a memory game with a simple array of buttons and LED's.</p>
+<div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="kgame.jpg" class="img-fluid"style="width: 30vw; min-width: 330px;">
+    </div>
+  </div>
+  <p>For this week's assignment, I wanted to make a game of sorts controlled by the microcontroller and utilizig the LED's. Eventually, I settled on making a memory game with a simple array of buttons and LED's. I wanted this project to be more interactive, and a game was the perfect way to fulfil that. </p>
   <p>I used an online arduino tutorial to build out most of the functional code and the inpsiration for the project. You can find the project here: 
 <a href="https://techatronic.com/sequence-arduino-electronic-game-game-with-arduino/">project website </a></p>
 
   <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
     <div class="col">
-      <img src="wiringreal.jpg" class="img-fluid">
+      <img src="wiringreal.jpg" class="img-fluid"style="width: 40vw; min-width: 330px;">
     </div>
   </div>
   <p><i>Final wiring! Could definitely be cleaner but works well for a prototype.</i></p>
@@ -28,11 +32,27 @@ includeNav: true
 
   <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
     <div class="col">
-      <img src="diagram.png" class="img-fluid">
+      <img src="diagram.png" class="img-fluid" class="img-fluid"style="width: 40vw; min-width: 330px;">
     </div>
   </div>
 
 <p> Let's now see it in action! </p>
+
+<div class="col">
+          <div class="img-wrapper">
+            <img src="gameplay.gif" style="width: 50vw; min-width: 330px;">
+          </div>
+</div>          
+  <p><i>The game signals the start by blinking all the lights 5 times. The player then 4 seconds after a sequence is shown to input the pattern.</i></p>
+
+<p> Overall I had a lot of fun playing the game! Simon is super simple but surprisingly addictive. If you fail the game (either by inputting the incorrect pattern or taking too long), the lights will flash and beep at you to both let you know and shame you (not really). The gif doesn't have sound, but trust me that the beeping is very annoying. </p>
+
+<div class="col">
+          <div class="img-wrapper">
+            <img src="fail.gif" style="width: 50vw; min-width: 330px;">
+          </div>
+</div>          
+  <p><i>After you fail, the lights will blink in the correct sequence.</i></p>
 
 
 
@@ -40,54 +60,178 @@ includeNav: true
 
   <div class="card bg-light">
     <div class="card-body">
-      <pre><code>int leds[] = {3, 4, 5, 6};
-<span class="text-info">//int leds[] = {6, 5, 4, 3}; // use this to make the lights go backwards</span>
-int numleds = 4; <span class="text-info">// because .length isn't here :(</span>
+      <pre><code> 
+ #define PLAYER_WAIT_TIME 4000 // The time allowed between button presses - 4s   
+ byte sequence[100];      // Storage for the light sequence  
+ byte curLen = 0;       // Current length of the sequence  
+ byte inputCount = 0;     // The number of times that the player has pressed a (correct) button in a given turn   
+ byte lastInput = 0;      // Last input from the player  
+ byte expRd = 0;        // The LED that's suppose to be lit by the player  
+ bool btnDwn = false;     // Used to check if a button is pressed  
+ bool wait = false;      // Is the program waiting for the user to press a button  
+ bool resetFlag = false;    // Used to indicate to the program that once the player lost  
+ byte soundPin = 5;      // Speaker output  
+ byte noPins = 4;       // Number of buttons/LEDs (While working on this, I was using only 2 LEDs)  
+                // You could make the game harder by adding an additional LED/button/resistors combination.  
+ byte pins[] = {2, 13, 10, 8}; // Button input pins and LED ouput pins - change these vaules if you wwant to connect yourbuttons to other pins  
+                // The number of elements must match noPins below  
+ long inputTime = 0;      // Timer variable for the delay between user inputs  
+ void setup() {  
+  delay(3000);        // This is to give me time to breathe after connection the arduino - can be removed if you want  
+  Serial.begin(9600);     // Start Serial monitor. This can be removed too as long as you remove all references to Serial below  
+  Reset();  
+ }  
+ ///  
+ /// Sets all the pins as either INPUT or OUTPUT based on the value of 'dir'  
+ ///  
+ void setPinDirection(byte dir){  
+  for(byte i = 0; i < noPins; i++){  
+   pinMode(pins[i], dir);   
+  }  
+ }  
+ //send the same value to all the LED pins  
+ void writeAllPins(byte val){  
+  for(byte i = 0; i < noPins; i++){  
+   digitalWrite(pins[i], val);   
+  }  
+ }  
+ //Makes a (very annoying) beep sound  
+ void beep(byte freq){  
+  analogWrite(soundPin, 2);  
+  delay(freq);  
+  analogWrite(soundPin, 0);  
+  delay(freq);  
+ }  
+ ///  
+ /// Flashes all the LEDs together  
+ /// freq is the blink speed - small number -> fast | big number -> slow  
+ ///  
+ void flash(short freq){  
+  setPinDirection(OUTPUT); /// We're activating the LEDS now  
+  for(int i = 0; i < 5; i++){  
+   writeAllPins(HIGH);  
+   beep(50);  
+   delay(freq);  
+   writeAllPins(LOW);  
+   delay(freq);  
+  }  
+ }  
+ ///  
+ ///This function resets all the game variables to their default values  
+ ///  
+ void Reset(){  
+  flash(500);  
+  curLen = 0;  
+  inputCount = 0;  
+  lastInput = 0;  
+  expRd = 0;  
+  btnDwn = false;  
+  wait = false;  
+  resetFlag = false;  
+ }  
+ ///  
+ /// User lost  
+ ///  
+ void Lose(){  
+  flash(50);   
+ }  
+ ///  
+ /// The arduino shows the user what must be memorized  
+ /// Also called after losing to show you what you last sequence was  
+ ///  
+ void playSequence(){  
+  //Loop through the stored sequence and light the appropriate LEDs in turn  
+  for(int i = 0; i < curLen; i++){  
+    Serial.print("Seq: ");  
+    Serial.print(i);  
+    Serial.print("Pin: ");  
+    Serial.println(sequence[i]);  
+    digitalWrite(sequence[i], HIGH);  
+    delay(500);  
+    digitalWrite(sequence[i], LOW);  
+    delay(250);  
+   }   
+ }  
+ ///  
+ /// The events that occur upon a loss  
+ ///  
+ void DoLoseProcess(){  
+  Lose();       // Flash all the LEDS quickly (see Lose function)  
+  delay(1000);  
+  playSequence();   // Shows the user the last sequence - So you can count remember your best score - Mine's 22 by the way 🙂  
+  delay(1000);  
+  Reset();      // Reset everything for a new game  
+ }  
+ ///  
+ /// Where the magic happens  
+ ///  
+ void loop() {   
+  if(!wait){     
+               //****************//  
+               // Arduino's turn //  
+               //****************//  
+   setPinDirection(OUTPUT);           // We're using the LEDs  
+   randomSeed(analogRead(A0));          // https://www.arduino.cc/en/Reference/RandomSeed  
+   sequence[curLen] = pins[random(0,noPins)];  // Put a new random value in the next position in the sequence - https://www.arduino.cc/en/Reference/random  
+   curLen++;                   // Set the new Current length of the sequence  
+   playSequence();                // Show the sequence to the player  
+   beep(50);                   // Make a beep for the player to be aware  
+   wait = true;                 // Set Wait to true as it's now going to be the turn of the player  
+   inputTime = millis();             // Store the time to measure the player's response time  
+  }else{   
+               //***************//  
+               // Player's turn //  
+               //***************//  
+   setPinDirection(INPUT);            // We're using the buttons  
+   if(millis() - inputTime > PLAYER_WAIT_TIME){ // If the player takes more than the allowed time,  
+    DoLoseProcess();              // All is lost 🙁  
+    return;  
+   }     
+   if(!btnDwn){                 //   
+    expRd = sequence[inputCount];        // Find the value we expect from the player  
+    Serial.print("Expected: ");         // Serial Monitor Output - Should be removed if you removed the Serial.begin above  
+    Serial.println(expRd);           // Serial Monitor Output - Should be removed if you removed the Serial.begin above  
+    for(int i = 0; i < noPins; i++){      // Loop through the all the pins  
+     if(pins[i]==expRd)              
+      continue;                // Ignore the correct pin  
+     if(digitalRead(pins[i]) == HIGH){     // Is the buttong pressed  
+      lastInput = pins[i];  
+      resetFlag = true;            // Set the resetFlag - this means you lost  
+      btnDwn = true;             // This will prevent the program from doing the same thing over and over again  
+      Serial.print("Read: ");         // Serial Monitor Output - Should be removed if you removed the Serial.begin above  
+      Serial.println(lastInput);       // Serial Monitor Output - Should be removed if you removed the Serial.begin above  
+     }  
+    }     
+   }  
+   if(digitalRead(expRd) == 1 && !btnDwn)    // The player pressed the right button  
+   {  
+    inputTime = millis();            //   
+    lastInput = expRd;  
+    inputCount++;                // The user pressed a (correct) button again  
+    btnDwn = true;               // This will prevent the program from doing the same thing over and over again  
+    Serial.print("Read: ");           // Serial Monitor Output - Should be removed if you removed the Serial.begin above  
+    Serial.println(lastInput);         // Serial Monitor Output - Should be removed if you removed the Serial.begin above  
+   }else{  
+    if(btnDwn && digitalRead(lastInput) == LOW){ // Check if the player released the button  
+     btnDwn = false;  
+     delay(20);  
+     if(resetFlag){               // If this was set to true up above, you lost  
+      DoLoseProcess();             // So we do the losing sequence of events  
+     }  
+     else{  
+      if(inputCount == curLen){         // Has the player finished repeating the sequence  
+       wait = false;              // If so, this will make the next turn the program's turn  
+       inputCount = 0;             // Reset the number of times that the player has pressed a button  
+       delay(1500);  
+      }  
+     }  
+    }  
+   }    
+  }  
+ }  
 
-void setup() {
-  <span class="text-info">// set LED pins to output and off</span>
-  for (int i = 0; i < numleds; i++) {
-    pinMode(leds[i], OUTPUT);
-    digitalWrite(leds[i], LOW);
-  }
-
-  pinMode(A0, OUTPUT);  <span class="text-info">//This will be GND for the potentiometer</span>
-  pinMode(A4, OUTPUT);  <span class="text-info">//This will be 3.3V for the pot</span>
-  pinMode(A2, INPUT);
-
-  digitalWrite(A0, LOW);
-  digitalWrite(A4, HIGH);
-}
-
-void loop() {
-  <span class="text-info">// check the potentiometer value</span>
-  int pot_value = analogRead(A2);
-  <span class="text-info">// map it to useful values representing the # of leds on</span>
-  <span class="text-info">// since map() truncates, use numleds+1 instead of numleds</span>
-  int led_value = map(pot_value, 0, 1023, 0, numleds+1);
-
-  <span class="text-info">// for each led in leds[]</span>
-  for (int l = 0; l < numleds; l++) {
-    <span class="text-info">// if it should be on, turn it on</span>
-    if (l < led_value) {
-      digitalWrite(leds[l], HIGH);
-    <span class="text-info">// otherwise turn it off</span>
-    } else {
-      digitalWrite(leds[l], LOW);
-    }
-  }
-  <span class="text-info">// this feels like an appropriately speedy response time</span>
-  delay(100);
 }</code></pre></div></div>
 
 <!-- CODE SNIPPET END -->
 
-  <p>Getting to this working code took a fair bit of debugging. Notably, the last light wouldn't turn on until I realized that map() truncates. Also, digital pin 1 simply doesn't work the way I intended, so I switched to using pins 3-6 to avoid the problem.</p>
-
-  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
-    <div class="col">
-      <img src="short.gif" class="img-fluid">
-    </div>
-  </div>
-  <p><i>it works! this is with the "backwards" code configuration.</i></p>
-</div>
+  <p>The code was pretty well labelled and straightforward. I modified the reaction time at the beginning because I found it hard to press the buttons on time. </p>
