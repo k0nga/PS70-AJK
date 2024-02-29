@@ -1,0 +1,91 @@
+---
+layout: default
+title: "PHYSCI 70: Intro to Digital Fabrication"
+includeNav: true
+---
+
+<div class="content">
+
+  <div align=center>
+    <h3>3D Printing and Scanning</h3>
+  </div>
+
+  <p><i>1. Design and print a small object that could not be (easily) made by subtractive methods. Discuss pros and cons of 3D printing this object rather than using other fabrication methods.</i></p>
+  <p><i>2. Prepare your file for printing using PrusaSlicer (or equivalent), and upload your 3D model file (e.g. .f3z), STL file, and sliced gcode file to your documentation.</i></p>
+  <p><i>3. Scan something.</i></p>
+
+  <p>For this week's project, I wanted to continue making tactile, interactive objects. I used a model of a fidget cube I found on thingiverse and modified it with the PS70 symbol to personalize it to the class.</p>
+
+  <a href="https://www.thingiverse.com/thing:6482442">Thingiverse link </a>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="thingiverse.png" class="img-fluid">
+    </div>
+  </div>
+  
+  <p>However, I ran into a couple issues when converting the mesh to a printable STL file. I suspect the model was designed in Blender due to the number of complex curves that were in the model. It was so complicated that it nearly crashed my computer the first couple of times I tried to convert the mesh. I also was particularly interested in this print because it was designed to be printed "in place," a concept Nathan introduced earlier in the week that I really wanted to try out!</p>
+
+<div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="cutaway.png" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="cutaway2.png" class="img-fluid">
+    </div>
+  </div>
+
+
+  <p>However, I ran into a couple issues when converting the mesh to a printable STL file. I suspect the model was designed in Blender due to the number of complex curves that were in the model. It was so complicated that it nearly crashed my computer the first couple of times I tried to convert the mesh.</p>
+
+
+  <p> Once I got the 3d model, I ran into some more issues with the printing. The first couple of times I attempted to print the model the print would not stick to the bed. </p>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="cutaway.png" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="cutaway2.png" class="img-fluid">
+    </div>
+  </div>
+  <p><i> Many failed attempts... </i></p>
+
+<p>Eventually Bobby helped me figure out that it had to do with the height of the extruder head. The extruder was dragging along as it printed and would tear up the previous layer as it continued to print. Once it got going, however, the results were quite satisfying! </p>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="cutaway.png" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="cutaway2.png" class="img-fluid">
+    </div>
+  </div>
+  <p><i> Many failed attempts... </i></p>
+
+
+  <div class="text-center">
+    <p><a download href='./better gyroscope v1.stl'>Download the gyroscope STL file</a></p>
+    <p><a download href='./pk better gyroscope v1_0.3mm_PLA_MK3S_16m.gcode'>Download the gyroscope gcode file</a></p>
+  </div>
+
+  <p>Then I tried scanning! Scanning is... hard. The scanner in the lab was finnicky and more often than not would produce some odd amalgamation of the part you were trying to scan. Instead, I opted to use Polycam on the phone, which operates by taking multiple pictures and piecing them together. </p>
+
+  <div class="text-center">
+    <p><a download href='./waterbottle scan.obj'>Download the water bottle obj file</a></p>
+    <p><a download href='./waterbottle scan.mtl'>Download the water bottle mtl file</a></p>
+  </div>
+
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+      <img src="waterbottle real.jpg" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="sense.jpg" class="img-fluid">
+    </div>
+    <div class="col">
+      <img src="waterbottle scan_thumbnail.png" class="img-fluid">
+    </div>
+  </div>
+  <p><i>So... yeah. it tried.</i></p>
+</div>
