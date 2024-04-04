@@ -1,0 +1,147 @@
+---
+layout: default
+title: "PHYSCI 70: Intro to Digital Fabrication"
+includeNav: true
+---
+
+<div class="content">
+
+  <div align=center>
+    <h3>Internet of Things</h3>
+  </div>
+
+  <p><i>Demonstrate communication between a microcontroller and another device. Optionally, work with a partner to control a device remotely.</i></p>
+
+  
+  <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+    <div class="col">
+
+  <p>For this project, I wanted to take advantage of some API technology. In passing, I had heard about API's from my friends who are into computer science and use arduinos to make all sorts of wacky things. A Youtuber I watch pretty frequently, Michael Reeves, once used an API to link up Twitter comments to another API to purchase Amazon products that users would request. In case you're curious, the video is here: https://youtu.be/hBP-NzOadL0?si=Wnd2ILzDVq-Qxr_R. </p>
+
+<p> While not nearly as advanced, I wanted to use the powers of API for good and find a practical use for one of my projects. I forget my keys pretty often, so we wanted to make a device that would annoy me until I picked up my keys. </p>
+
+<p>Yao and I first started off by finding the CallMeBot API, an API that could be used to send text messages over WhatsApp with some pretty simple code. The project is linked here: https://randomnerdtutorials.com/esp32-send-messages-whatsapp/</p>
+
+<p> Setting up the API, I had to give them my IP address and some of my Whatsapp data. Little sketch, but what could go wrong? Unfortutnately for Yao, the bot ghosted her, but I was able to get the bot's digits and start texting. Here are some tests we ran with the initial code: </p>
+
+<div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+  <div class="col">
+    <img src="text.png" class="img-fluid" style="width: 50vw; min-width: 330px;">
+  </div>
+</div>
+
+<p> We then used an ultrasonic sensor to detect whether or not my keys were present. The API will continually text me "did you remember your keys" until it senses that my keys have moved from the ultrasonic sensor. Below is the code:</p>
+
+</div>
+
+
+  <div class="card bg-light">
+    <div class="card-body">
+      <pre><code> 
+
+
+  #include <WiFi.h>    
+#include <HTTPClient.h>
+#include <UrlEncode.h>
+
+
+const int trigPin = 10;
+const int echoPin = 9;
+
+//define sound speed in cm/uS
+#define SOUND_SPEED 0.034
+#define CM_TO_INCH 0.393701
+
+long duration;
+float distanceCm;
+float distanceInch;
+
+const char* ssid = "AJKsamsung";
+const char* password = "59925992";
+
+// +international_country_code + phone number
+// Portugal +351, example: +351912345678
+String phoneNumber = "+16502766489";
+String apiKey = "2897682";
+
+void sendMessage(String message){
+
+  // Data to send with HTTP POST
+  String url = "https://api.callmebot.com/whatsapp.php?phone=" + phoneNumber + "&apikey=" + apiKey + "&text=" + urlEncode(message);    
+  HTTPClient http;
+  http.begin(url);
+
+  // Specify content-type header
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  
+  // Send HTTP POST request
+  int httpResponseCode = http.POST(url);
+  if (httpResponseCode == 200){
+    Serial.print("Message sent successfully");
+  }
+  else{
+    Serial.println("Error sending the message");
+    Serial.print("HTTP response code: ");
+    Serial.println(httpResponseCode);
+  }
+
+  // Free resources
+  http.end();
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting");
+  while(WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to WiFi network with IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+}
+
+void loop() {
+   // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  
+  // Calculate the distance
+  distanceCm = duration * SOUND_SPEED/2;
+  
+  // Convert to inches
+  distanceInch = distanceCm * CM_TO_INCH;
+  
+  // Prints the distance in the Serial Monitor
+  Serial.print("Distance (cm): ");
+  Serial.println(distanceCm);
+  Serial.print("Distance (inch): ");
+  Serial.println(distanceInch);
+
+  
+  delay(1000); 
+
+if (distanceCm < 10) {
+
+ // Send Message to WhatsAPP
+  sendMessage("did you remember your keys");
+
+}
+ 
+}
+
+}</code></pre></div></div>
+
+<!-- CODE SNIPPET END -->
