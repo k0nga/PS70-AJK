@@ -22,15 +22,40 @@ includeNav: true
 
 <p>Yao and I first started off by finding the CallMeBot API, an API that could be used to send text messages over WhatsApp with some pretty simple code. The project is linked here: https://randomnerdtutorials.com/esp32-send-messages-whatsapp/</p>
 
-<p> Setting up the API, I had to give them my IP address and some of my Whatsapp data. Little sketch, but what could go wrong? Unfortutnately for Yao, the bot ghosted her, but I was able to get the bot's digits and start texting. Here are some tests we ran with the initial code: </p>
-
 <div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
   <div class="col">
     <img src="text.png" class="img-fluid" style="width: 50vw; min-width: 330px;">
   </div>
 </div>
 
-<p> We then used an ultrasonic sensor to detect whether or not my keys were present. The API will continually text me "did you remember your keys" until it senses that my keys have moved from the ultrasonic sensor. Below is the code:</p>
+
+<p> Setting up the API, I had to give them my IP address and some of my Whatsapp data. Little sketch, but what could go wrong? Unfortutnately for Yao, the bot ghosted her, but I was able to get the bot's digits and start texting. Here are some tests we ran with the initial code: </p>
+
+<div class="row img-wrapper d-flex flex-wrap align-items-center justify-content-md-center">
+  <div class="col">
+    <img src="sadyao.jpg" class="img-fluid" style="width: 50vw; min-width: 330px;">
+  </div>
+</div>
+
+<p> We then used an ultrasonic sensor to detect whether or not my keys were present. The API will continually text me "did you remember your keys" until it senses that my keys have moved from the ultrasonic sensor. </p>
+
+<div class="col col-4">
+      <video width="100%" height="100%" preload="auto" controls>
+        <source src="text.mov" type="video/mov">
+      </video>
+    </div>
+
+<p> <i> I've walked away, but without my keys! The API will now continually text me until I notice and go get my keys. </i> </p>
+
+<div class="col col-4">
+      <video width="100%" height="100%" preload="auto" controls>
+        <source src="keys.mov" type="video/mov">
+      </video>
+    </div>
+
+<p> <i> After finally remembering to grab my keys, I take keys away from the ultrasonic sensor and the nightmares finally stop. No more texts from CallMeBot. </i> </p>
+
+<p> Here's the code that makes all of this run: </p>
 
 </div>
 
